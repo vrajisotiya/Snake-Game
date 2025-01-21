@@ -1,0 +1,143 @@
+<html>
+	<head>
+		<title>Snake game</title>
+		<script src="https://code.jquery.com/jquery-3.7.1.js" integrity=
+		"sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+		<style>
+			body{
+				display: flex;
+				justify-content: center;
+				align-item : center;
+				
+			}
+			.board{
+				display: grid;
+				height: 500px;
+				width: 500px;
+				grid-template-rows: repeat(20,1fr);
+				grid-template-columns: repeat(20,1fr);
+				border: 3px solid black;
+			}
+			
+			.cell{
+				
+				background-color: white;
+			}
+			
+			.snake{
+				background-color: red;
+			}
+			
+			.food{
+				background-color: black;
+			}
+			
+		</style>
+	</head>
+	<body>
+		<div class = "board"></div>
+		<div>
+			<h3 style = "margin-left: 50px" id = "score"></h3>
+			<h3 style = "margin-left: 50px" id = "highscore"></h3>
+		</div>
+	</body>
+	<script>
+		$(document).ready(function(){
+			const gridSize = 20;
+			const totalSize = 400;
+			let snake = [0];
+			let direction = {x:0, y:0};
+			let moveInterval = null;
+			let food = null;
+			let highscore = 0;
+			let score = 0;
+			
+			for(let i = 0; i<totalSize; i++){
+				$(".board").append(`<div id = ${i} class="cell"></div>`);
+			}
+			
+			function getRandom(){
+				let a;
+				do{
+					a = Math.floor(Math.random()*totalSize);
+				}while(snake.includes(a))
+				return a;
+			}
+			
+			function renderSnake(){
+				$(".cell").removeClass("snake");
+				snake.forEach((position)=>{
+					$(`#${position}`).addClass("snake");
+				});
+			}
+			
+			function InitalizeGame(){
+				snake = [0];
+				direction = {x:0, y:0};
+				food = getRandom();
+				$(".cell").removeClass("food snake");
+				$(`#${food}`).addClass("food");
+				renderSnake();
+				highscore = Math.max(score,highscore);
+				score = 0;
+				$("#score").html(`<h1>SCORE : ${score}</h1>`);
+				$("#highscore").html(`<h1>HIGHSCORE : ${highscore}</h1>`);
+				if(moveInterval){
+					clearInterval(moveInterval);
+				}
+				moveInterval = setInterval(moveSnake,200);
+			}
+			
+			function moveSnake(){
+				if(direction.x == 0 && direction.y == 0) return;
+				let head = snake[0];
+				let newHead = head + direction.y * gridSize + direction.x;
+				
+				if(newHead<0 || newHead>399 || (direction.x === -1 && head%gridSize === 0) || (direction.x=== 1&& head%gridSize === gridSize-1) || snake.includes(newHead)){
+					alert("Game Over. Restarting......");
+					//clearInterval(moveInterval);
+					InitalizeGame();
+					return;
+				}
+				
+				if(newHead == food){
+					score++;
+					$(".cell").removeClass("food");
+					snake.unshift(newHead);
+					food = getRandom();
+					$(`#${food}`).addClass("food");
+					$("#score").html(`<h1>SCORE : ${score}</h1>`);
+				}
+				else{
+					snake.unshift(newHead);
+					snake.pop();
+				}
+				
+				renderSnake();
+			}
+			
+			$(document).keydown(function(e){
+			
+				
+				switch(e.key){
+					case "ArrowUp":
+						direction = {x:0, y:-1};
+						break;
+					case "ArrowDown":
+						direction = {x:0, y:1};
+						break;
+					case "ArrowLeft":
+						direction = {x:-1, y:0};
+						break;
+					case "ArrowRight":
+						direction = {x:1, y:0};
+						break;
+					default:
+						return;
+				}
+			})
+			
+			InitalizeGame();
+		});
+	</script>
+</html>
